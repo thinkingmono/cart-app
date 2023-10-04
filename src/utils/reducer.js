@@ -1,60 +1,44 @@
-import { CLEAR_CART, REMOVE_ITEM, INCREASE_AMOUNT, DECREASE_AMOUNT, FETCH_DATA, CALCULATE_TOTALS } from "./actions";
-const url = 'https://www.course-api.com/react-useReducer-cart-project';
+import { CLEAR_CART, REMOVE_ITEM, INCREASE_AMOUNT, DECREASE_AMOUNT, FETCH_DATA, LOADING } from "./actions";
 
 const reducer = (state, action) => {
     if (action.type === CLEAR_CART) {
-        return { ...state, cart: [] }
+        return { ...state, cart: new Map() }
     }
+
     if (action.type === REMOVE_ITEM) {
-        state.cart.delete(action.payload.id);
-        return { ...state };
+        const newCart = new Map(state.cart); /*It is necessary to instantiate a new element so we dont modify original object directly.*/
+        newCart.delete(action.payload.id);
+        return { ...state, cart: newCart };
     }
+
     if (action.type === INCREASE_AMOUNT) {
-        for (let [key, { id, title, price, img }] of state.cart) {
-            if (action.payload.id === key) {
-                state.cart.set(key, { id: id, title: title, price: price, img: img, amount: action.payload.amount + 1 });
-            }
-        }
-        return { ...state };
+        const newCart = new Map(state.cart);
+        const itemId = action.payload.id;
+        const item = newCart.get(itemId);
+        const newItem = { ...item, amount: item.amount + 1 }
+        newCart.set(itemId, newItem);
+        return { ...state, cart: newCart };
     }
+
     if (action.type === DECREASE_AMOUNT) {
-        for (let [key, { id, title, price, img }] of state.cart) {
-            if (action.payload.id === key && action.payload.amount > 0) {
-                state.cart.set(key, { id: id, title: title, price: price, img: img, amount: action.payload.amount - 1 });
-            }
+        const newCart = new Map(state.cart);
+        const itemId = action.payload.id;
+        const item = newCart.get(itemId);
+        if (item.amount === 1) {
+            newCart.delete(itemId);
+            return { ...state, cart: newCart };
         }
-        return { ...state };
+        const newItem = { ...item, amount: item.amount - 1 };
+        newCart.set(itemId, newItem);
+        return { ...state, cart: newCart };
     }
+
+    if (action.type === LOADING) {
+        return { ...state, isLoading: true }
+    }
+
     if (action.type === FETCH_DATA) {
-        const fetchData = async () => {
-            try {
-                const response = await fetch(url);
-                if(!response.ok){
-                    setIsLoading(false);
-                    setIsError(true);
-                    return;
-                }
-                const cart = await response.json();
-                console.log(cart);
-                const cartArray = cart.map((item) => [item.id, item]);
-                console.log(cartArray);
-                const cartMap = new Map(cartArray);
-                console.log(cartMap);
-                // return cartMap
-            } catch (error) {
-                setIsError(true);
-                console.log('Error: ' + error);
-            }
-        }
-        return {...state, cart: fetchData()};
-    }
-    if (action.type === CALCULATE_TOTALS) {
-        let total = 0;
-        console.log(state);
-        // for (let [key, { id, title, price, img, amount }] of state.cart) {
-        //     total = total + (amount*price);
-        // }
-        return total;
+        return { ...state, isLoading: false, cart: new Map(action.payload.cart.map((item) => [item.id, item])) }
     }
     throw new Error(`No matching "${action.type}" - action type`);
 }

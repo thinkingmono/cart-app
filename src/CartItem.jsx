@@ -16,13 +16,13 @@ const CartItem = ({ id, img, title, price, amount }) => {
       </div>
       <div>
         {/* increase amount */}
-        <button className='amount-btn' onClick={() => increaseAmount(id, amount)}>
+        <button className='amount-btn' onClick={() => increaseAmount(id)}>
           <FaChevronUp className='amount-icon' />
         </button>
         {/* amount */}
         <span className='amount'>{amount}</span>
         {/* decrease amount */}
-        <button className='amount-btn' onClick={() => decreaseAmount(id, amount)}>
+        <button className='amount-btn' onClick={() => decreaseAmount(id)}>
           <FaChevronDown className='amount-icon' />
         </button>
       </div>
